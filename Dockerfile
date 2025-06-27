@@ -22,24 +22,16 @@ RUN curl -fsSLO "$SUPERCRONIC_URL" \
 FROM python:3.13-alpine
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/opt/venv/bin:$PATH" \
-    TARGET_USER="appuser" \
-    TARGET_GROUP="appgroup" \
-    TARGET_UID=6969 \
-    TARGET_GID=6969
-
-RUN addgroup -g ${TARGET_GID} -S ${TARGET_GROUP} \
-    && adduser -u ${TARGET_UID} -S -G appgroup ${TARGET_USER}     
+    PATH="/opt/venv/bin:$PATH" 
 
 WORKDIR /app
 
 COPY --from=builder /opt/venv /opt/venv
 
-COPY --chown=${TARGET_UID}:${TARGET_GID} \
-     backup.py \
+COPY backup.py \
      entrypoint.sh \
      ./
 
-RUN chmod u+x backup.py entrypoint.sh && chown ${TARGET_UID}:${TARGET_GID} /app
+RUN chmod u+x backup.py entrypoint.sh 
 
 ENTRYPOINT ["./entrypoint.sh"]
