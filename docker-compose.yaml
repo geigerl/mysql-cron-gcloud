@@ -1,15 +1,15 @@
 services:
   db_cron_backup_cloud:
-    image: shuffle4117/sql-supercronic-gcloud-backup:1.0.0
+    image: shuffle4117/sql-supercronic-gcloud-backup:1.0.1
     volumes:      
       - ./backups:/backups:ro
     environment:    
-      CRON_TIME: "0 4 * * *" # every day at 4 a.m.
-      GCLOUD_STORAGE_CREDENTIALS_PATH: /run/secrets/backend_gcloud_creds_storage
+      CRON_TIME: ${CRON_TIME:-0 4 * * *} # every day at 4 a.m.
+      GCLOUD_STORAGE_CREDENTIALS_SECRET_NAME: backend_gcloud_creds_storage
       IN_CONTAINER_BACKUPS_DIR: /backups
-      BACKUP_FILE_NAME: FILE.sql.gz
-      BACKUP_FILE_BLOB_DIR_PATH: "" # empty = at root of bucket
-      BUCKET_NAME: BUCKETNAME
+      BACKUP_FILE_NAME: ${BACKUP_FILE_NAME:?err}
+      BACKUP_FILE_BLOB_DIR_PATH: ${BACKUP_FILE_BLOB_DIR_PATH:-} # empty = at root of bucket
+      BUCKET_NAME: ${BUCKET_NAME:?err}
       MAX_BACKUP_FILES: 360 
       OVERRIDE_FILES: false # overwrite identical files
       TZ: Europe/Berlin # timezone for correct log time
@@ -19,5 +19,5 @@ services:
 secrets:
   backend_gcloud_creds_storage:
     # external: true  
-    file: <path>
+    file: ${SECRET_PATH:?err}
       

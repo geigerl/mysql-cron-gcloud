@@ -20,26 +20,26 @@ RUN curl -fsSLO "$SUPERCRONIC_URL" \
 
 
 FROM python:3.13-alpine
-ARG USER_GID=1000
-ARG USER_UID=1000
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/opt/venv/bin:$PATH"
+    PATH="/opt/venv/bin:$PATH" \
+    TARGET_USER="appuser" \
+    TARGET_GROUP="appgroup" \
+    TARGET_UID=6969 \
+    TARGET_GID=6969
 
-RUN addgroup -g ${USER_GID} -S appgroup \
-    && adduser -u ${USER_UID} -S -G appgroup appuser     
+RUN addgroup -g ${TARGET_GID} -S ${TARGET_GROUP} \
+    && adduser -u ${TARGET_UID} -S -G appgroup ${TARGET_USER}     
 
 WORKDIR /app
 
 COPY --from=builder /opt/venv /opt/venv
 
-COPY --chown=appuser:appgroup \
+COPY --chown=${TARGET_UID}:${TARGET_GID} \
      backup.py \
      entrypoint.sh \
      ./
 
-RUN chmod +x backup.py entrypoint.sh && chown appuser:appgroup /app
-
-USER appuser
+RUN chmod u+x backup.py entrypoint.sh && chown ${TARGET_UID}:${TARGET_GID} /app
 
 ENTRYPOINT ["./entrypoint.sh"]
